@@ -61,16 +61,18 @@ pipeline {
                     
                     // 2. Submit the MapReduce Job to Dataproc (GCloud CLI is in your Docker image)
                     sh """
-                        gcloud dataproc jobs submit hadoop \
+                        gcloud \
+                        dataproc jobs submit hadoop \
                         --cluster=${DATAPROC_CLUSTER} \
                         --region=${DATAPROC_REGION} \
-                        --class=org.apache.hadoop.streaming.StreamJob \
-                        --jars=gs://goog-dataproc-submit/job/hadoop-streaming-2.7.3.jar \
+                        --jar=file:///usr/lib/hadoop-mapreduce/hadoop-streaming.jar \
                         -- \
-                        -mapper gs://${BUCKET}/mapper.py \
-                        -reducer gs://${BUCKET}/reducer.py \
+                        -D mapreduce.input.fileinputformat.input.dir.recursive=true \
+                        -files gs://${BUCKET}/mapper.py,gs://${BUCKET}/reducer.py \
                         -input ${HADOOP_INPUT_PATH} \
-                        -output ${HADOOP_OUTPUT_PATH}
+                        -output ${HADOOP_OUTPUT_PATH} \
+                        -mapper "python3 mapper.py" \
+                        -reducer "python3 reducer.py"
                         
                         echo "Hadoop job submitted. Output will be in ${HADOOP_OUTPUT_PATH}"
                     """
