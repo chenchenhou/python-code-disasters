@@ -83,12 +83,9 @@ pipeline {
         stage('Display Results') {
             steps {
                 script {
-                    // 1. Download the MapReduce output from GCS
-                    sh "gsutil cp ${HADOOP_OUTPUT_PATH}part-* ./mapreduce_output.txt"
-                    
-                    // 2. Display the final result (as required by the prompt)
+                    // Display the final result (as required by the prompt)
                     echo "--- MapReduce Line Count Results ---"
-                    sh "cat mapreduce_output.txt"
+                    sh "gsutil cat ${HADOOP_OUTPUT_PATH}part-*"
                 }
             }
         }
